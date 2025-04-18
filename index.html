@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blade Ball FX</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0c0c0c;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #menu, #usernamePrompt, #gameCanvas {
+      display: none;
+    }
+    #menu, #usernamePrompt {
+      flex-direction: column;
+      align-items: center;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    canvas {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu" style="display: flex;">
+  <h1>Blade Ball FX</h1>
+  <button onclick="showUsernamePrompt()">Play</button>
+</div>
+
+<div id="usernamePrompt" style="display: flex;">
+  <label>Enter your username:</label>
+  <input type="text" id="usernameInput" style="padding: 8px; margin-top: 10px;">
+  <button onclick="startGame()">Start</button>
+</div>
+
+<canvas id="gameCanvas" width="900" height="600"></canvas>
+
+<script>
+let canvas = document.getElementById('gameCanvas');
+let ctx = canvas.getContext('2d');
+
+let player = { x: 100, y: 300, radius: 25, alive: true, name: '', deflecting: false };
+let enemy = { x: 800, y: 300, radius: 25, alive: true };
+let ball = { x: 450, y: 300, radius: 12, vx: 6, vy: 3, trail: [] };
+
+let gameStarted = false;
+let deflectFlash = 0;
+
+function showUsernamePrompt() {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('usernamePrompt').style.display = 'flex';
+}
+
+function startGame() {
+  let username = document.getElementById('usernameInput').value;
+  if (!username) return;
+  player.name = username;
+  document.getElementById('usernamePrompt').style.display = 'none';
+  canvas.style.display = 'block';
+  gameStarted = true;
+  requestAnimationFrame(gameLoop);
+}
+
+canvas.addEventListener('click', () => {
+  if (!player.alive) return;
+
+  let dx = ball.x - player.x;
+  let dy = ball.y - player.y;
+  let dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < 60) {
+    // Deflect towards enemy
+    let targetDx = enemy.x - player.x;
+    let targetDy = enemy.y - player.y;
+    let mag = Math.sqrt(targetDx * targetDx + targetDy * targetDy);
+    ball.vx = (targetDx / mag) * 8; // Speed can be adjusted
+    ball.vy = (targetDy / mag) * 8;
+
+    deflectFlash = 15;
+    player.deflecting = true;
+    setTimeout(() => player.deflecting = false, 200);
+  }
+});
+
+function drawTrail() {
+  for (let i = 0; i < ball.trail.length; i++) {
+    let p = ball.trail[i];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, ball.radius - i * 1, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.1})`;
+    ctx.fill();
+  }
+}
+
+function drawPlayer(p, color, name) {
+  if (!p.alive) return;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(name, p.x - ctx.measureText(name).width / 2, p.y - 35);
+
+  if (p.deflecting) {
+    ctx.strokeStyle = '#0ff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius + 10, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawBall() {
+  ctx.save();
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawArena() {
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+}
+
+function gameLoop() {
+  if (!gameStarted) return;
+
+  // Update trail
+  ball.trail.unshift({ x: ball.x, y: ball.y });
+  if (ball.trail.length > 10) ball.trail.pop();
+
+  // Update ball position
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Bounce off top and bottom
+  if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
+    ball.vy *= -1;
+  }
+
+  // Check collisions
+  if (player.alive && dist(ball, player) < ball.radius + player.radius) {
+    player.alive = false;
+  }
+
+  if (enemy.alive && dist(ball, enemy) < ball.radius + enemy.radius) {
+    enemy.alive = false;
+  }
+
+  // Clear canvas with motion blur
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawArena();
+  drawTrail();
+  drawBall();
+  drawPlayer(player, "#38bdf8", player.name);
+  drawPlayer(e<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blade Ball FX</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0c0c0c;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #menu, #usernamePrompt, #gameCanvas {
+      display: none;
+    }
+    #menu, #usernamePrompt {
+      flex-direction: column;
+      align-items: center;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    canvas {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu" style="display: flex;">
+  <h1>Blade Ball FX</h1>
+  <button onclick="showUsernamePrompt()">Play</button>
+</div>
+
+<div id="usernamePrompt" style="display: flex;">
+  <label>Enter your username:</label>
+  <input type="text" id="usernameInput" style="padding: 8px; margin-top: 10px;">
+  <button onclick="startGame()">Start</button>
+</div>
+
+<canvas id="gameCanvas" width="900" height="600"></canvas>
+
+<script>
+let canvas = document.getElementById('gameCanvas');
+let ctx = canvas.getContext('2d');
+
+let player = { x: 100, y: 300, radius: 25, alive: true, name: '', deflecting: false };
+let enemy = { x: 800, y: 300, radius: 25, alive: true };
+let ball = { x: 450, y: 300, radius: 12, vx: 6, vy: 3, trail: [] };
+
+let gameStarted = false;
+let deflectFlash = 0;
+
+function showUsernamePrompt() {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('usernamePrompt').style.display = 'flex';
+}
+
+function startGame() {
+  let username = document.getElementById('usernameInput').value;
+  if (!username) return;
+  player.name = username;
+  document.getElementById('usernamePrompt').style.display = 'none';
+  canvas.style.display = 'block';
+  gameStarted = true;
+  requestAnimationFrame(gameLoop);
+}
+
+canvas.addEventListener('click', () => {
+  if (!player.alive) return;
+
+  let dx = ball.x - player.x;
+  let dy = ball.y - player.y;
+  let dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < 60) {
+    // Deflect towards enemy
+    let targetDx = enemy.x - player.x;
+    let targetDy = enemy.y - player.y;
+    let mag = Math.sqrt(targetDx * targetDx + targetDy * targetDy);
+    ball.vx = (targetDx / mag) * 8; // Speed can be adjusted
+    ball.vy = (targetDy / mag) * 8;
+
+    deflectFlash = 15;
+    player.deflecting = true;
+    setTimeout(() => player.deflecting = false, 200);
+  }
+});
+
+function drawTrail() {
+  for (let i = 0; i < ball.trail.length; i++) {
+    let p = ball.trail[i];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, ball.radius - i * 1, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.1})`;
+    ctx.fill();
+  }
+}
+
+function drawPlayer(p, color, name) {
+  if (!p.alive) return;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(name, p.x - ctx.measureText(name).width / 2, p.y - 35);
+
+  if (p.deflecting) {
+    ctx.strokeStyle = '#0ff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius + 10, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawBall() {
+  ctx.save();
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawArena() {
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+}
+
+function gameLoop() {
+  if (!gameStarted) return;
+
+  // Update trail
+  ball.trail.unshift({ x: ball.x, y: ball.y });
+  if (ball.trail.length > 10) ball.trail.pop();
+
+  // Update ball position
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Bounce off top and bottom
+  if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
+    ball.vy *= -1;
+  }
+
+  // Check collisions
+  if (player.alive && dist(ball, player) < ball.radius + player.radius) {
+    player.alive = false;
+  }
+
+  if (enemy.alive && dist(ball, enemy) < ball.radius + enemy.radius) {
+    enemy.alive = false;
+  }
+
+  // Clear canvas with motion blur
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawArena();
+  drawTrail();
+  drawBall();
+  drawPlayer(player, "#38bdf8", player.name);
+  drawPlayer(enemy, "#ef4444", "Enemy");
+
+  // Flash effect
+  if (deflectFlash > 0) {
+    ctx.fillStyle = `rgba(0,255,255,${deflectFlash / 20})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    deflectFlash--;
+  }
+
+  if (!player.alive) {
+    ctx.fillStyle = "#f87171";
+    ctx.font = "48px sans-serif";
+    ctx.fillText("You Died!", canvas.width / 2 - 100, canvas.height / 2);
+    return;
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function dist(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+</script>
+
+</body>
+</html>
